@@ -115,16 +115,12 @@ export default function AdminPagesList() {
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center justify-end gap-2">
-                        <Button variant="ghost" size="icon" asChild title="Xem trang">
-                          <a href={`/trang/${page.id}`} target="_blank" rel="noopener noreferrer">
-                            <Globe className="h-4 w-4 text-slate-500 hover:text-blue-600" />
-                          </a>
-                        </Button>
-                        <Button variant="ghost" size="icon" asChild title="Chỉnh sửa">
-                          <Link href={`/admin/pages/${page.id}`}>
-                            <Edit className="h-4 w-4 text-slate-500 hover:text-green-600" />
-                          </Link>
-                        </Button>
+                        <a href={`/trang/${page.id}`} target="_blank" rel="noopener noreferrer" className="inline-flex h-9 w-9 items-center justify-center rounded-md hover:bg-slate-100 transition-colors" title="Xem trang">
+                          <Globe className="h-4 w-4 text-slate-500 hover:text-blue-600" />
+                        </a>
+                        <Link href={`/admin/pages/${page.id}`} className="inline-flex h-9 w-9 items-center justify-center rounded-md hover:bg-slate-100 transition-colors" title="Chỉnh sửa">
+                          <Edit className="h-4 w-4 text-slate-500 hover:text-blue-600" />
+                        </Link>
                         <AlertDialog>
                           <AlertDialogTrigger>
                             <Button 

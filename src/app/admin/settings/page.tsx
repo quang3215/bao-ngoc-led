@@ -21,6 +21,7 @@ export default function AdminSettingsPage() {
     logoUrl: "",
     mapUrl: "",
     facebook: "",
+    youtube: "",
     zaloOA: "",
     tiktok: "",
     linkGroups: [] as FooterLinkGroup[],
@@ -42,6 +43,7 @@ export default function AdminSettingsPage() {
             logoUrl: data.logoUrl || "",
             mapUrl: data.mapUrl || "",
             facebook: data.socialLinks?.facebook || "",
+            youtube: data.socialLinks?.youtube || "",
             zaloOA: data.socialLinks?.zaloOA || "",
             tiktok: data.socialLinks?.tiktok || "",
             linkGroups: data.footer?.linkGroups || [

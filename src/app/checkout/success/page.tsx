@@ -35,17 +35,12 @@ export default async function CheckoutSuccessPage({
         </div>
 
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <Button asChild size="lg" className="h-14 px-8 font-bold text-base rounded-full shadow-lg shadow-primary/25">
-            <Link href="/danh-muc/tat-ca">
-              <ShoppingBag className="mr-2 h-5 w-5" />
-              Tiếp tục mua sắm
-            </Link>
-          </Button>
-          <Button asChild variant="outline" size="lg" className="h-14 px-8 font-bold text-base rounded-full border-slate-200 text-slate-700 hover:bg-slate-50">
-            <Link href="/">
-              Về trang chủ <ArrowRight className="ml-2 h-5 w-5" />
-            </Link>
-          </Button>
+          <Link href="/danh-muc/tat-ca" className="inline-flex items-center justify-center h-14 px-8 font-bold text-base rounded-full shadow-lg shadow-primary/25 bg-[#4A238B] text-white hover:bg-[#35156B] transition-colors">
+            Tiếp tục mua sắm
+          </Link>
+          <Link href="/account/orders" className="inline-flex items-center justify-center h-14 px-8 font-bold text-base rounded-full border border-slate-200 text-slate-700 hover:bg-slate-50 transition-colors bg-white">
+            Theo dõi đơn hàng
+          </Link>
         </div>
 
       </div>
