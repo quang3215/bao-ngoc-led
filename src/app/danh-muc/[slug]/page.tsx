@@ -39,22 +39,7 @@ export default async function CategoryPage({
       allProducts = allProducts.filter(p => p.subCategory === subSlug);
     }
     
-    // MOCK DATA GENERATION: If no products found, create mock products so the UI isn't empty!
-    if (allProducts.length === 0) {
-      allProducts = Array.from({ length: 20 }).map((_, i) => ({
-        sku: `mock-${slug}-${i}`,
-        name: `Sản phẩm Demo ${i + 1}`,
-        price: 155000 + (i * 5000),
-        stock: 10,
-        images: ["https://vcdn.tikicdn.com/cache/w1200/ts/product/f3/d3/42/411eb345d14df9042bbf062dc7ed8eb7.png"],
-        category: slug,
-        subCategory: "placeholder",
-        specs: {
-          wattage: "10W",
-          color_temperature: "6500K"
-        },
-      } as unknown as Product));
-    }
+    // Removed MOCK DATA GENERATION
 
     products = allProducts;
   } catch (error) {
