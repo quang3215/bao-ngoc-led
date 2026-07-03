@@ -126,7 +126,7 @@ export default function AdminPagesList() {
                           </Link>
                         </Button>
                         <AlertDialog>
-                          <AlertDialogTrigger asChild>
+                          <AlertDialogTrigger>
                             <Button 
                               variant="ghost" 
                               size="icon" 

@@ -154,7 +154,7 @@ export default function AdminContactsPage() {
                           {contact.status === "new" ? <CheckCircle className="h-4 w-4" /> : <MailOpen className="h-4 w-4" />}
                         </Button>
                         <AlertDialog>
-                          <AlertDialogTrigger asChild>
+                          <AlertDialogTrigger>
                             <Button 
                               variant="ghost" 
                               size="icon"

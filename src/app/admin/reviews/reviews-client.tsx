@@ -136,7 +136,7 @@ export function ReviewsClient() {
                     </td>
                     <td className="px-6 py-4 text-right">
                       <AlertDialog>
-                        <AlertDialogTrigger asChild>
+                        <AlertDialogTrigger>
                           <Button
                             variant="ghost"
                             size="icon"
