@@ -17,7 +17,7 @@ export default async function SearchPage({
   try {
     const qFirestore = query(collection(db, "products"));
     const snapshot = await getDocs(qFirestore);
-    let allProducts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Product));
+    let allProducts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as unknown as Product));
 
     // Filter locally by search query
     if (q) {

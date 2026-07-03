@@ -121,7 +121,7 @@ export function Header() {
                     {settings.categories?.map((cat: any, idx: number) => {
                       if (cat.subCategories && cat.subCategories.length > 0) {
                         return (
-                          <Accordion type="single" collapsible key={cat.slug} className="w-full">
+                          <Accordion key={cat.slug} className="w-full">
                             <AccordionItem value={cat.slug} className="border-b-0">
                               <AccordionTrigger className="px-4 py-3 hover:no-underline hover:bg-gray-50 rounded-lg data-[state=open]:bg-gray-50">
                                 <div className="flex items-center gap-3 text-[#111827]">

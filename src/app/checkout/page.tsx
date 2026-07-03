@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { collection, addDoc, serverTimestamp, doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useCartStore } from "@/store/cart";
@@ -70,13 +71,14 @@ export default function CheckoutPage() {
           price: item.price,
           quantity: item.quantity,
           image: item.image,
-          variant: item.variant || ""
+          wattage: item.wattage || "",
+          color_temperature: item.color_temperature || ""
         })),
         total: totalPrice,
         status: "pending",
         customerInfo: {
           ...formData,
-          email: user?.email || formData.email || "",
+          email: user?.email || "",
           userId: user?.uid || null
         },
         createdAt: new Date().toISOString(),

@@ -15,8 +15,7 @@ export function StorefrontLayout({ children }: { children: React.ReactNode }) {
   const initializeAuth = useAuthStore(state => state.initialize);
 
   useEffect(() => {
-    const unsubscribe = initializeAuth();
-    return () => unsubscribe();
+    initializeAuth();
   }, [initializeAuth]);
 
   if (isAdmin) {

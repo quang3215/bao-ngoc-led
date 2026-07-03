@@ -32,7 +32,7 @@ export default async function CategoryPage({
     }
 
     const snapshot = await getDocs(q);
-    let allProducts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Product));
+    let allProducts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as unknown as Product));
 
     // Filter by subCategory in Javascript if present
     if (subSlug) {
