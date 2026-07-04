@@ -3,8 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { auth, db } from "@/lib/firebase";
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from "firebase/auth";
-import { doc, setDoc } from "firebase/firestore";
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import { doc, setDoc, getDoc } from "firebase/firestore";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -61,6 +61,37 @@ export default function LoginPage() {
         errorMsg = "Mật khẩu quá yếu, cần ít nhất 6 ký tự.";
       }
       toast.error(errorMsg);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    try {
+      setIsLoading(true);
+      const provider = new GoogleAuthProvider();
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+      
+      const userDocRef = doc(db, "users", user.uid);
+      const userDocSnap = await getDoc(userDocRef);
+      
+      if (!userDocSnap.exists()) {
+        await setDoc(userDocRef, {
+          uid: user.uid,
+          name: user.displayName || "",
+          email: user.email || "",
+          phone: user.phoneNumber || "",
+          role: "customer",
+          createdAt: new Date().toISOString()
+        });
+      }
+      
+      toast.success("Đăng nhập bằng Google thành công!");
+      router.push("/account");
+    } catch (error: any) {
+      console.error("Google Auth error:", error);
+      toast.error("Đăng nhập bằng Google thất bại hoặc bị hủy.");
     } finally {
       setIsLoading(false);
     }
@@ -161,6 +192,23 @@ export default function LoginPage() {
             >
               {isLoading && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
               {isLogin ? "Đăng nhập" : "Đăng ký"}
+            </Button>
+
+            <div className="relative !my-6 flex items-center">
+              <div className="flex-grow border-t border-slate-200"></div>
+              <span className="flex-shrink-0 mx-4 text-slate-400 text-sm">Hoặc</span>
+              <div className="flex-grow border-t border-slate-200"></div>
+            </div>
+
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleGoogleLogin}
+              disabled={isLoading}
+              className="w-full h-12 bg-white text-slate-700 hover:bg-slate-50 border-slate-200 shadow-sm font-medium rounded-xl transition-all duration-300"
+            >
+              <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" className="w-5 h-5 mr-3" />
+              Tiếp tục với Google
             </Button>
           </form>
 
