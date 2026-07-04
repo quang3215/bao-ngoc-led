@@ -93,7 +93,7 @@ function CategoryProductCard({ product }: { product: CategoryBlockProduct }) {
               <ShoppingCart className="w-4 h-4" />
             </button>
             <button 
-              className="flex-[3] h-8 sm:h-9 bg-[#ee4d2d] hover:bg-[#d73d1f] text-white font-medium px-2 text-[11px] sm:text-xs uppercase tracking-wide rounded-md transition-colors disabled:opacity-50"
+              className="flex-[3] h-8 sm:h-9 bg-[#4A238B] hover:bg-[#35156B] text-white font-medium px-2 text-[11px] sm:text-xs uppercase tracking-wide rounded-md transition-colors disabled:opacity-50"
               onClick={(e) => {
                 e.preventDefault();
                 addItem({
