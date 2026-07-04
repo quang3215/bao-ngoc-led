@@ -2,10 +2,9 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { ShoppingCart } from "lucide-react";
-import { Card, CardContent, CardFooter } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useCartStore } from "@/store/cart";
 import { formatCurrency } from "@/lib/utils";
@@ -32,6 +31,7 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product }: ProductCardProps) {
+  const router = useRouter();
   const addItem = useCartStore((state) => state.addItem);
   
   const defaultImage = "https://vcdn.tikicdn.com/cache/w1200/ts/product/6e/b5/1d/18e38eaed7fb8c9f5926715b7468132e.png";
@@ -39,7 +39,7 @@ export function ProductCard({ product }: ProductCardProps) {
   const [imgSrc, setImgSrc] = useState(initialImage);
 
   const handleAddToCart = (e: React.MouseEvent) => {
-    e.preventDefault(); // Prevent navigating to product detail
+    e.preventDefault(); 
     addItem({
       sku: product.sku,
       name: product.name,
@@ -52,6 +52,20 @@ export function ProductCard({ product }: ProductCardProps) {
     toast.success("Đã thêm vào giỏ hàng!", {
       description: product.name,
     });
+  };
+
+  const handleBuyNow = (e: React.MouseEvent) => {
+    e.preventDefault();
+    addItem({
+      sku: product.sku,
+      name: product.name,
+      price: product.price,
+      quantity: 1,
+      image: imgSrc,
+      wattage: product.specs.wattage,
+      color_temperature: product.specs.color_temperature,
+    });
+    router.push('/checkout');
   };
 
   return (
@@ -84,7 +98,7 @@ export function ProductCard({ product }: ProductCardProps) {
           <h3 className="font-semibold text-[#222] text-[13px] sm:text-sm line-clamp-2 leading-snug mb-2 group-hover:text-[#4A238B] transition-colors">
             {product.name}
           </h3>
-          <div className="mt-auto flex flex-col gap-1">
+          <div className="mt-auto flex flex-col gap-2">
             <div className="flex items-center gap-1.5 flex-wrap">
               <span className="text-base sm:text-lg font-bold text-[#ee4d2d] tracking-tight">
                 {formatCurrency(product.price)}
@@ -94,24 +108,33 @@ export function ProductCard({ product }: ProductCardProps) {
               </span>
             </div>
             
-            <div className="flex gap-1.5 flex-wrap mt-1">
+            <div className="flex gap-1.5 flex-wrap">
               <span className="bg-[#e0f2fe] text-[#0284c7] text-[10px] sm:text-[11px] px-2 py-0.5 rounded font-medium">
                 {product.specs.wattage || "Sản phẩm mới"}
               </span>
             </div>
+
+            {/* Action Buttons */}
+            <div className="flex items-center gap-2 mt-2">
+              <Button 
+                variant="outline"
+                className="flex-[1] h-8 sm:h-9 border-[#4A238B] text-[#4A238B] hover:bg-[#f3e8ff] px-0"
+                onClick={handleAddToCart}
+                disabled={product.stock <= 0}
+                title="Thêm vào giỏ hàng"
+              >
+                <ShoppingCart className="w-4 h-4" />
+              </Button>
+              <Button 
+                className="flex-[3] h-8 sm:h-9 bg-[#ee4d2d] hover:bg-[#d73d1f] text-white font-medium px-2 text-[11px] sm:text-xs uppercase tracking-wide"
+                onClick={handleBuyNow}
+                disabled={product.stock <= 0}
+              >
+                {product.stock > 0 ? "Mua ngay" : "Hết hàng"}
+              </Button>
+            </div>
           </div>
         </CardContent>
-        {/* Hidden Add to cart on mobile, visible on hover desktop */}
-        <div className="hidden sm:block absolute bottom-0 left-0 right-0 p-4 transform translate-y-full opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 bg-white/95 backdrop-blur-sm z-30 border-t border-slate-100">
-          <Button 
-            className="w-full h-10 bg-[#4A238B] text-white hover:bg-[#35156B] rounded-lg font-medium shadow-md"
-            onClick={handleAddToCart}
-            disabled={product.stock <= 0}
-          >
-            <ShoppingCart className="w-4 h-4 mr-2" />
-            {product.stock > 0 ? "Thêm vào giỏ" : "Hết hàng"}
-          </Button>
-        </div>
       </Card>
     </Link>
   );
