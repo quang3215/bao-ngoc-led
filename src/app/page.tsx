@@ -226,9 +226,9 @@ export default async function Home() {
 
        // Removed mock products fallback
 
-       let matchingCat = MEGA_MENU_CATEGORIES.find(c => c.slug === row.categorySlug);
+       let matchingCat = categoriesConfig.find(c => c.slug === row.categorySlug);
        if (!matchingCat) {
-         matchingCat = categoriesConfig.find(c => c.slug === row.categorySlug);
+         matchingCat = MEGA_MENU_CATEGORIES.find(c => c.slug === row.categorySlug);
        }
        let subcategories = matchingCat?.subCategories?.map((s: any) => ({ name: s.name, href: `/danh-muc/${s.slug}` })) || [];
        
