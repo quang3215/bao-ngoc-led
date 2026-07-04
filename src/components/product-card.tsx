@@ -127,7 +127,7 @@ export function ProductCard({ product }: ProductCardProps) {
                 <ShoppingCart className="w-4 h-4" />
               </Button>
               <Button 
-                className="flex-[3] h-8 sm:h-9 bg-[#4A238B] hover:bg-[#35156B] text-white font-medium px-2 text-[11px] sm:text-xs uppercase tracking-wide"
+                className="flex-[3] h-8 sm:h-9 bg-[#7B1FA2] hover:bg-[#4A238B] text-white font-medium px-2 text-[11px] sm:text-xs uppercase tracking-wide"
                 onClick={handleBuyNow}
                 disabled={product.stock <= 0}
               >
