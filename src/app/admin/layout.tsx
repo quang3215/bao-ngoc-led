@@ -1,9 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { LayoutDashboard, Package, ShoppingCart, Users, Settings, LogOut, FileText, Layout, Home, Menu, Grid, MessageSquare, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useAuthStore } from "@/store/auth";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
+
+const ADMIN_EMAIL = "lmquang28@gmail.com";
 
 const SIDEBAR_ITEMS = [
   { name: "Tổng quan", href: "/admin", icon: LayoutDashboard },
@@ -22,6 +27,38 @@ const SIDEBAR_ITEMS = [
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
+  const { user, isLoading } = useAuthStore();
+  const [isAuthorized, setIsAuthorized] = useState(false);
+
+  useEffect(() => {
+    if (isLoading) return;
+    
+    if (!user) {
+      toast.error("Vui lòng đăng nhập để truy cập trang quản trị!");
+      router.replace("/login");
+      return;
+    }
+
+    if (user.email !== ADMIN_EMAIL) {
+      toast.error("Tài khoản của bạn không có quyền truy cập trang quản trị!");
+      router.replace("/");
+      return;
+    }
+
+    setIsAuthorized(true);
+  }, [user, isLoading, router]);
+
+  if (!isAuthorized) {
+    return (
+      <div className="flex h-screen w-screen items-center justify-center bg-slate-50">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-[#4A238B] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-slate-500 font-medium">Đang xác thực quyền Admin...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-screen bg-slate-100">

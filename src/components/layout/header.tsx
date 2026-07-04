@@ -245,9 +245,15 @@ export function Header() {
             {user && (
               <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded shadow-lg border border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
                 <div className="p-2 flex flex-col">
-                  <Link href="/account" className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-[#4A238B]">Trang cá nhân</Link>
-                  <Link href="/account/orders" className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-[#4A238B]">Đơn hàng của tôi</Link>
-                  <button onClick={handleLogout} className="px-4 py-2 text-sm text-red-600 hover:bg-red-50 text-left">Đăng xuất</button>
+                  {user.email === "lmquang28@gmail.com" && (
+                    <Link href="/admin" className="px-4 py-2 text-sm font-bold text-[#4A238B] hover:bg-[#eaddff] rounded bg-purple-50 mb-1 border border-purple-100">
+                      ⚙️ Vào Trang Quản Trị
+                    </Link>
+                  )}
+                  <Link href="/account" className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-[#4A238B] rounded">Trang cá nhân</Link>
+                  <Link href="/account/orders" className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-[#4A238B] rounded">Đơn hàng của tôi</Link>
+                  <div className="h-px bg-gray-100 my-1"></div>
+                  <button onClick={handleLogout} className="px-4 py-2 text-sm text-red-600 hover:bg-red-50 text-left rounded font-medium">Đăng xuất</button>
                 </div>
               </div>
             )}
