@@ -793,7 +793,7 @@ export default function AdminProductsPage() {
                         ))}
                       </select>
                       
-                      {categories?.find((c: any) => c.slug === product.category)?.subCategories?.length > 0 && (
+                      {(categories?.find((c: any) => c.slug === product.category)?.subCategories?.length ?? 0) > 0 && (
                         <div className="flex items-center text-xs text-slate-400 pl-1">
                           <ChevronRight className="h-3 w-3 shrink-0 mr-1" />
                           <select 
@@ -802,7 +802,7 @@ export default function AdminProductsPage() {
                             onChange={(e) => handleQuickCategoryChange(product.id, 'subCategory', e.target.value)}
                           >
                             <option value="">Không có DM con</option>
-                            {categories?.find((c: any) => c.slug === product.category)?.subCategories.map((s: any) => (
+                            {categories?.find((c: any) => c.slug === product.category)?.subCategories?.map((s: any) => (
                               <option key={s.slug} value={s.slug}>{s.name}</option>
                             ))}
                           </select>
