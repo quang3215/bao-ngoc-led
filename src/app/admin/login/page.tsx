@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { auth } from "@/lib/firebase";
-import { signInWithEmailAndPassword } from "firebase/auth";
+import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -37,6 +37,28 @@ export default function AdminLoginPage() {
         errorMsg = "Email hoặc mật khẩu không chính xác.";
       }
       toast.error(errorMsg);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    try {
+      setIsLoading(true);
+      const provider = new GoogleAuthProvider();
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+      
+      if (user.email === "lmquang28@gmail.com") {
+        toast.success("Đăng nhập Admin thành công!");
+        router.push("/admin");
+      } else {
+        toast.error("Tài khoản này không có quyền Quản trị!");
+        router.push("/admin"); 
+      }
+    } catch (error: any) {
+      console.error("Admin Google Auth error:", error);
+      toast.error("Đăng nhập bằng Google thất bại hoặc bị hủy.");
     } finally {
       setIsLoading(false);
     }
@@ -112,6 +134,23 @@ export default function AdminLoginPage() {
               ) : (
                 "Đăng nhập hệ thống"
               )}
+            </Button>
+
+            <div className="relative !my-6 flex items-center">
+              <div className="flex-grow border-t border-slate-700/50"></div>
+              <span className="flex-shrink-0 mx-4 text-slate-500 text-sm">Hoặc</span>
+              <div className="flex-grow border-t border-slate-700/50"></div>
+            </div>
+
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleGoogleLogin}
+              disabled={isLoading}
+              className="w-full h-12 bg-slate-800 text-slate-200 hover:bg-slate-700 hover:text-white border-slate-600 shadow-sm font-medium rounded-xl transition-all duration-300"
+            >
+              <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" className="w-5 h-5 mr-3" />
+              Đăng nhập với Google
             </Button>
           </form>
           
