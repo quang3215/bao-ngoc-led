@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/store/auth";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { useSettingsStore } from "@/store/settings";
 
 const ADMIN_EMAIL = "lmquang28@gmail.com";
 
@@ -29,7 +30,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const pathname = usePathname();
   const router = useRouter();
   const { user, isLoading } = useAuthStore();
+  const fetchSettings = useSettingsStore(state => state.fetchSettings);
   const [isAuthorized, setIsAuthorized] = useState(false);
+
+  useEffect(() => {
+    fetchSettings();
+  }, [fetchSettings]);
 
   useEffect(() => {
     if (pathname === "/admin/login") return; // Bypass check for login page

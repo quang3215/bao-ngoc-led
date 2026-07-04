@@ -8,6 +8,7 @@ import { doc, getDoc, setDoc } from "firebase/firestore";
 import { db, uploadFileToFirebase } from "@/lib/firebase";
 import { toast } from "sonner";
 import { MEGA_MENU_CATEGORIES, MainCategory, CategoryItem } from "@/lib/categories-data";
+import { useSettingsStore } from "@/store/settings";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -53,6 +54,7 @@ export default function AdminCategoriesConfig() {
     setIsSaving(true);
     try {
       await setDoc(doc(db, "settings", "categories"), { items: categories });
+      useSettingsStore.getState().fetchSettings();
       toast.success("Đã lưu cấu trúc Danh mục thành công!");
     } catch (error) {
       console.error("Error saving categories:", error);
