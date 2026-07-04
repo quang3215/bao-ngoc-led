@@ -32,11 +32,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [isAuthorized, setIsAuthorized] = useState(false);
 
   useEffect(() => {
+    if (pathname === "/admin/login") return; // Bypass check for login page
     if (isLoading) return;
     
     if (!user) {
       toast.error("Vui lòng đăng nhập để truy cập trang quản trị!");
-      router.replace("/login");
+      router.replace("/admin/login");
       return;
     }
 
@@ -47,7 +48,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     }
 
     setIsAuthorized(true);
-  }, [user, isLoading, router]);
+  }, [user, isLoading, router, pathname]);
+
+  if (pathname === "/admin/login") {
+    return <>{children}</>;
+  }
 
   if (!isAuthorized) {
     return (
