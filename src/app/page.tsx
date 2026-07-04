@@ -230,7 +230,7 @@ export default async function Home() {
        if (!matchingCat) {
          matchingCat = MEGA_MENU_CATEGORIES.find(c => c.slug === row.categorySlug);
        }
-       let subcategories = matchingCat?.subCategories?.map((s: any) => ({ name: s.name, href: `/danh-muc/${s.slug}` })) || [];
+       let subcategories = matchingCat?.subCategories?.map((s: any) => ({ name: s.name, href: `/danh-muc/${matchingCat.slug}?sub=${s.slug}` })) || [];
        
        // Fallback mock subcategories if empty
        if (subcategories.length === 0) {
