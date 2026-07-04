@@ -1,21 +1,31 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { formatCurrency } from "@/lib/utils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Phone, MapPin, List, ShoppingCart } from "lucide-react";
+import { Phone, MapPin, List, ShoppingCart, ChevronLeft, ChevronRight } from "lucide-react";
 import { useCartStore } from "@/store/cart";
 import { useSettingsStore, SiteSettings } from "@/store/settings";
-import { useEffect } from "react";
 import { RelatedProducts } from "@/components/related-products";
 import { ProductReviews } from "@/components/product-reviews";
 
 export function ProductDetailClient({ product }: { product: any }) {
   const { settings, fetchSettings } = useSettingsStore();
   const [activeImage, setActiveImage] = useState(0);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  const scroll = (direction: 'left' | 'right') => {
+    if (scrollContainerRef.current) {
+      const scrollAmount = 200;
+      scrollContainerRef.current.scrollBy({
+        left: direction === 'left' ? -scrollAmount : scrollAmount,
+        behavior: 'smooth'
+      });
+    }
+  };
 
   useEffect(() => {
     fetchSettings();
@@ -65,21 +75,43 @@ export function ProductDetailClient({ product }: { product: any }) {
                 priority
               />
             </div>
-            <div className="flex gap-4">
-              {images.map((img: string, idx: number) => (
-                <div 
-                  key={idx} 
-                  onClick={() => setActiveImage(idx)}
-                  className={`relative w-20 h-20 rounded-md overflow-hidden bg-[#f7f7f7] cursor-pointer border-2 transition-colors flex items-center justify-center p-2
-                    ${activeImage === idx ? 'border-blue-500' : 'border-transparent hover:border-gray-300'}`}
-                >
-                  <Image src={img} alt={`Thumb ${idx}`} fill className="object-contain mix-blend-multiply" />
+            <div className="relative group mt-2">
+              <button 
+                onClick={() => scroll('left')}
+                className="absolute left-0 top-1/2 -translate-y-1/2 -ml-3 sm:-ml-4 z-10 bg-white border border-gray-200 shadow-md rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-opacity text-gray-600 hover:text-[#4A238B]"
+                aria-label="Previous image"
+              >
+                <ChevronLeft className="w-5 h-5" />
+              </button>
+
+              <div 
+                ref={scrollContainerRef}
+                className="flex gap-3 overflow-x-auto pb-2 snap-x hide-scrollbar"
+                style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+              >
+                {images.map((img: string, idx: number) => (
+                  <div 
+                    key={idx} 
+                    onClick={() => setActiveImage(idx)}
+                    className={`shrink-0 snap-start relative w-[72px] h-[72px] sm:w-20 sm:h-20 rounded-md overflow-hidden bg-[#f7f7f7] cursor-pointer border-2 transition-colors flex items-center justify-center p-2
+                      ${activeImage === idx ? 'border-[#4A238B]' : 'border-transparent hover:border-gray-300'}`}
+                  >
+                    <Image src={img} alt={`Thumb ${idx}`} fill className="object-contain mix-blend-multiply" />
+                  </div>
+                ))}
+                {/* Fake 360 icon thumbnail */}
+                <div className="shrink-0 snap-start relative w-[72px] h-[72px] sm:w-20 sm:h-20 rounded-md overflow-hidden bg-[#f7f7f7] cursor-pointer border-2 border-transparent hover:border-gray-300 flex items-center justify-center">
+                  <span className="font-bold text-gray-400 text-lg sm:text-xl">360°</span>
                 </div>
-              ))}
-              {/* Fake 360 icon thumbnail */}
-              <div className="relative w-20 h-20 rounded-md overflow-hidden bg-[#f7f7f7] cursor-pointer border-2 border-transparent hover:border-gray-300 flex items-center justify-center">
-                <span className="font-bold text-gray-400 text-xl">360°</span>
               </div>
+
+              <button 
+                onClick={() => scroll('right')}
+                className="absolute right-0 top-1/2 -translate-y-1/2 -mr-3 sm:-mr-4 z-10 bg-white border border-gray-200 shadow-md rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-opacity text-gray-600 hover:text-[#4A238B]"
+                aria-label="Next image"
+              >
+                <ChevronRight className="w-5 h-5" />
+              </button>
             </div>
           </div>
 
