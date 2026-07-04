@@ -3,9 +3,12 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, ShoppingCart } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 import { Product } from "@/components/product-card";
+import { useCartStore } from "@/store/cart";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 export interface CategoryBlockProduct extends Product {
   originalPrice?: number;
@@ -17,6 +20,8 @@ function CategoryProductCard({ product }: { product: CategoryBlockProduct }) {
   const defaultImage = "https://vcdn.tikicdn.com/cache/w1200/ts/product/f3/d3/42/411eb345d14df9042bbf062dc7ed8eb7.png";
   const initialImage = (product.images && product.images.length > 0 && product.images[0]) ? product.images[0] : defaultImage;
   const [imgSrc, setImgSrc] = useState(initialImage);
+  const addItem = useCartStore((state) => state.addItem);
+  const router = useRouter();
 
   return (
     <div className="bg-white p-3 sm:p-5 lg:p-7 group relative flex flex-col h-full hover:shadow-xl hover:-translate-y-1 transition-all duration-500 z-0 hover:z-10">
@@ -60,10 +65,53 @@ function CategoryProductCard({ product }: { product: CategoryBlockProduct }) {
 
           {/* Tag */}
           {product.tag && (
-            <div className="inline-block bg-[#e0f2fe] text-[#0284c7] text-[10px] font-semibold px-2 py-0.5 rounded-sm uppercase tracking-wider">
+            <div className="inline-block bg-[#e0f2fe] text-[#0284c7] text-[10px] font-semibold px-2 py-0.5 rounded-sm uppercase tracking-wider mb-2">
               {product.tag}
             </div>
           )}
+
+          {/* Action Buttons */}
+          <div className="flex items-center gap-2 mt-2">
+            <button 
+              className="flex-[1] h-8 sm:h-9 flex items-center justify-center border border-[#4A238B] text-[#4A238B] hover:bg-[#f3e8ff] rounded-md transition-colors disabled:opacity-50"
+              onClick={(e) => {
+                e.preventDefault();
+                addItem({
+                  sku: product.sku,
+                  name: product.name,
+                  price: product.price,
+                  quantity: 1,
+                  image: imgSrc,
+                  wattage: product.specs?.wattage,
+                  color_temperature: product.specs?.color_temperature,
+                });
+                toast.success("Đã thêm vào giỏ hàng!", { description: product.name });
+              }}
+              disabled={product.stock <= 0}
+              title="Thêm vào giỏ hàng"
+            >
+              <ShoppingCart className="w-4 h-4" />
+            </button>
+            <button 
+              className="flex-[3] h-8 sm:h-9 bg-[#ee4d2d] hover:bg-[#d73d1f] text-white font-medium px-2 text-[11px] sm:text-xs uppercase tracking-wide rounded-md transition-colors disabled:opacity-50"
+              onClick={(e) => {
+                e.preventDefault();
+                addItem({
+                  sku: product.sku,
+                  name: product.name,
+                  price: product.price,
+                  quantity: 1,
+                  image: imgSrc,
+                  wattage: product.specs?.wattage,
+                  color_temperature: product.specs?.color_temperature,
+                });
+                router.push('/checkout');
+              }}
+              disabled={product.stock <= 0}
+            >
+              {product.stock > 0 ? "Mua ngay" : "Hết hàng"}
+            </button>
+          </div>
         </div>
       </div>
     </div>
