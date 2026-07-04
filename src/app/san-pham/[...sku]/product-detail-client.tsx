@@ -310,11 +310,13 @@ export function ProductDetailClient({ product }: { product: any }) {
           </TabsContent>
         </Tabs>
 
-        {/* Reviews */}
-        <ProductReviews sku={product.sku} />
+        <div className="w-full max-w-6xl mx-auto px-4 pb-12">
+          {/* Reviews */}
+          <ProductReviews sku={product.sku} />
 
-        {/* Related Products */}
-        <RelatedProducts currentSku={product.sku} category={product.category} />
+          {/* Related Products */}
+          <RelatedProducts currentSku={product.sku} category={product.category} />
+        </div>
       </div>
     </div>
   );
