@@ -192,33 +192,28 @@ export default async function CategoryPage({
     <div className="bg-slate-50 min-h-screen pb-12">
       {HeroBanner}
       <div className="container px-4 md:px-8 max-w-7xl mx-auto mt-8 md:mt-12">
-        <div className="mb-6 flex items-center justify-between">
-          <h2 className="text-2xl font-bold tracking-tight text-gray-900 capitalize">
-            Tất cả sản phẩm
-          </h2>
-          <p className="text-muted-foreground text-sm font-medium">{products.length} sản phẩm</p>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          {/* Sidebar */}
-          <div className="lg:col-span-1 hidden lg:block">
-            <FilterSidebar />
-          </div>
-
-          {/* Product Grid */}
-          <div className="lg:col-span-3">
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
-              {products.map((product) => (
-                <ProductCard key={product.sku} product={product} />
-              ))}
-            </div>
-            {products.length === 0 && (
-              <div className="text-center py-20 bg-white rounded-2xl border border-border/50">
-                <p className="text-muted-foreground">Không tìm thấy sản phẩm nào trong danh mục này.</p>
-              </div>
-            )}
+        <div className="mb-6 flex flex-col md:flex-row md:items-end justify-between border-b border-gray-200 pb-4">
+          <div>
+            <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2 capitalize">
+              {subSlug 
+                ? (mainCat?.subCategories?.find((s: any) => s.slug === subSlug)?.name || subSlug.replace(/-/g, ' ')) 
+                : 'Tất cả sản phẩm'}
+            </h2>
+            <p className="text-muted-foreground text-sm font-medium">{products.length} sản phẩm</p>
           </div>
         </div>
+
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+          {products.map((product) => (
+            <ProductCard key={product.sku} product={product} />
+          ))}
+        </div>
+        
+        {products.length === 0 && (
+          <div className="text-center py-20 bg-white rounded-2xl border border-border/50 mt-8">
+            <p className="text-muted-foreground text-lg">Đang cập nhật sản phẩm cho danh mục này.</p>
+          </div>
+        )}
       </div>
     </div>
   );
