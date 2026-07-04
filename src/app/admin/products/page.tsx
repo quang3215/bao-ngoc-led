@@ -321,6 +321,31 @@ export default function AdminProductsPage() {
     }
   };
 
+  const handleQuickCategoryChange = async (productId: string, field: 'category' | 'subCategory', value: string) => {
+    try {
+      const updateData: any = { [field]: value };
+      if (field === 'category') {
+        updateData.subCategory = ""; // Reset sub category when main category changes
+      }
+      
+      await setDoc(doc(db, "products", productId), updateData, { merge: true });
+      
+      setProducts(prev => prev.map(p => {
+        if (p.id === productId) {
+          if (field === 'category') {
+             return { ...p, category: value, subCategory: "" };
+          }
+          return { ...p, [field]: value };
+        }
+        return p;
+      }));
+      toast.success("Cập nhật danh mục thành công!");
+    } catch (error) {
+      console.error("Error updating category:", error);
+      toast.error("Lỗi khi cập nhật danh mục!");
+    }
+  };
+
   if (viewState === 'form') {
     return (
       <div className="max-w-5xl mx-auto pb-20">
@@ -755,14 +780,33 @@ export default function AdminProductsPage() {
                     </div>
                   </td>
                   <td className="px-6 py-4 font-mono text-xs">{product.sku}</td>
-                  <td className="px-6 py-4 text-muted-foreground">
-                    <div className="flex flex-col">
-                      <span>{categories?.find(c => c.slug === product.category)?.name || product.category}</span>
-                      {product.subCategory && (
-                        <span className="flex items-center text-xs text-slate-400">
-                          <ChevronRight className="h-3 w-3" />
-                          {categories?.find(c => c.slug === product.category)?.subCategories.find(s => s.slug === product.subCategory)?.name || product.subCategory}
-                        </span>
+                  <td className="px-6 py-4">
+                    <div className="flex flex-col gap-1 w-[160px]">
+                      <select 
+                        className="text-sm bg-transparent border border-transparent focus:border-purple-200 focus:ring-1 focus:ring-purple-500 rounded px-2 py-1 -ml-2 text-slate-700 font-medium w-full cursor-pointer hover:bg-slate-100 transition-colors"
+                        value={product.category || ""}
+                        onChange={(e) => handleQuickCategoryChange(product.id, 'category', e.target.value)}
+                      >
+                        <option value="" disabled>Chọn danh mục...</option>
+                        {categories?.map((c: any) => (
+                          <option key={c.slug} value={c.slug}>{c.name}</option>
+                        ))}
+                      </select>
+                      
+                      {categories?.find((c: any) => c.slug === product.category)?.subCategories?.length > 0 && (
+                        <div className="flex items-center text-xs text-slate-400 pl-1">
+                          <ChevronRight className="h-3 w-3 shrink-0 mr-1" />
+                          <select 
+                            className="text-xs bg-transparent border border-transparent focus:border-purple-200 focus:ring-1 focus:ring-purple-500 rounded px-1 py-1 -ml-1 text-slate-500 w-full cursor-pointer hover:bg-slate-100 transition-colors"
+                            value={product.subCategory || ""}
+                            onChange={(e) => handleQuickCategoryChange(product.id, 'subCategory', e.target.value)}
+                          >
+                            <option value="">Không có DM con</option>
+                            {categories?.find((c: any) => c.slug === product.category)?.subCategories.map((s: any) => (
+                              <option key={s.slug} value={s.slug}>{s.name}</option>
+                            ))}
+                          </select>
+                        </div>
                       )}
                     </div>
                   </td>
