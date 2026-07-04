@@ -127,7 +127,7 @@ export interface CategoryBlockProps {
 }
 
 export function CategoryBlock({ title, href, subcategories, products, isOdd }: CategoryBlockProps) {
-  if (!products || products.length === 0) return null;
+  const safeProducts = products || [];
 
   return (
     <section className="py-6 bg-[#f4f5f7]">
@@ -161,11 +161,21 @@ export function CategoryBlock({ title, href, subcategories, products, isOdd }: C
 
           {/* Right Column - Products Grid */}
           <div className="flex-1 flex flex-col">
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-[1px] bg-gray-200 border border-gray-200 overflow-hidden sm:rounded-none">
-              {products.slice(0, 6).map((product) => (
-                <CategoryProductCard key={product.sku} product={product} />
-              ))}
-            </div>
+            {safeProducts.length === 0 ? (
+              <div className="flex-1 flex flex-col items-center justify-center bg-white border border-gray-100 p-8 text-center min-h-[300px]">
+                <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-4">
+                  <span className="text-gray-400 text-2xl">📦</span>
+                </div>
+                <h3 className="text-lg font-bold text-gray-700 mb-2">Đang cập nhật sản phẩm</h3>
+                <p className="text-sm text-gray-500 max-w-sm">Các sản phẩm thuộc danh mục này đang được chúng tôi cập nhật lên hệ thống. Vui lòng quay lại sau nhé!</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-[1px] bg-gray-200 border border-gray-200 overflow-hidden sm:rounded-none">
+                {safeProducts.slice(0, 6).map((product) => (
+                  <CategoryProductCard key={product.sku} product={product} />
+                ))}
+              </div>
+            )}
             
             <div className="mt-4 flex justify-center w-full px-4 sm:px-0">
                <Link href={href} className="w-full sm:w-[300px] text-center bg-white text-[#4A238B] border border-[#4A238B] py-2.5 font-bold text-sm hover:bg-[#4A238B] hover:text-white transition-colors rounded-md shadow-sm">
