@@ -15,7 +15,7 @@ import { MEGA_MENU_CATEGORIES } from "@/lib/categories-data";
 
 import { icons } from "lucide-react";
 
-export const revalidate = 3600;
+export const revalidate = 0;
 
 // --- COMPONENTS ---
 
