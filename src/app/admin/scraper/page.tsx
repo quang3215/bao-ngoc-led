@@ -140,7 +140,10 @@ export default function ScraperPage() {
             <a 
               href={bookmarkletCode} 
               className="px-8 py-4 bg-[#4A238B] text-white font-black rounded-lg shadow-lg hover:scale-105 transition-transform flex items-center gap-2 cursor-grab active:cursor-grabbing hover:bg-[#381b6c]"
-              onClick={(e) => e.preventDefault()}
+              onClick={(e) => {
+                e.preventDefault();
+                alert("ĐỪNG CLICK! Bạn hãy NHẤN GIỮ CHUỘT vào nút này, sau đó KÉO VÀ THẢ nó lên thanh Dấu trang (Bookmark Bar) ở trên cùng của trình duyệt nhé!");
+              }}
             >
               <DownloadCloud className="w-5 h-5" />
               🛒 Kéo về Bảo Ngọc LED
