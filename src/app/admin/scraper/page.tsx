@@ -49,11 +49,6 @@ export default function ScraperPage() {
         }
       });
 
-      if(!name || price === 0) {
-        alert("Bảo Ngọc Scraper: Không tìm thấy tên hoặc giá sản phẩm trên trang này. Hãy chắc chắn bạn đang ở trang chi tiết sản phẩm!");
-        return;
-      }
-
       alert("Đang cào dữ liệu: " + name + "... Vui lòng chờ!");
 
       fetch('${origin}/api/scrape/bookmarklet', {
