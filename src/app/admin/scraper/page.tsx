@@ -23,8 +23,13 @@ export default function ScraperPage() {
       return;
     }
 
-    if (!url.includes("rangdong.com.vn") && !url.includes("rangdongstore.vn")) {
-      toast.error("Vui lòng nhập link hợp lệ từ trang chủ Rạng Đông!");
+    if (url.includes("rangdongstore.vn")) {
+      toast.error("Trang rangdongstore.vn có tường lửa chống cào dữ liệu. Vui lòng lấy link từ trang chủ chính thức: rangdong.com.vn (Ví dụ: rangdong.com.vn/category/den-led-am-tran)");
+      return;
+    }
+
+    if (!url.includes("rangdong.com.vn")) {
+      toast.error("Vui lòng nhập link hợp lệ từ trang chủ Rạng Đông (rangdong.com.vn)!");
       return;
     }
 

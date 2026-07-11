@@ -34,8 +34,11 @@ export async function POST(request: Request) {
     if (productLinks.length === 0) {
       $cat('a').each((i, el) => {
         const href = $cat(el).attr('href');
-        if (href && href.includes('/product/') && !productLinks.includes(href)) {
-          productLinks.push(href);
+        if (href && (href.includes('/product/') || href.includes('-p-') || href.includes('.html')) && !productLinks.includes(href)) {
+          // exclude category links which have -c-
+          if (!href.includes('-c-')) {
+            productLinks.push(href);
+          }
         }
       });
     }
@@ -50,9 +53,11 @@ export async function POST(request: Request) {
 
     let scrapedCount = 0;
 
+    const baseUrl = new URL(url).origin;
+
     for (const link of linksToScrape) {
       try {
-        const fullLink = link.startsWith('http') ? link : `https://rangdong.com.vn${link}`;
+        const fullLink = link.startsWith('http') ? link : `${baseUrl}${link}`;
         const { data: prodData } = await axios.get(fullLink, {
           headers: {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'
@@ -71,7 +76,7 @@ export async function POST(request: Request) {
            image = $prod('meta[property="og:image"]').attr('content');
         }
         if (image && !image.startsWith('http')) {
-          image = `https://rangdong.com.vn${image}`;
+          image = `${baseUrl}${image}`;
         }
 
         // Parse Price
