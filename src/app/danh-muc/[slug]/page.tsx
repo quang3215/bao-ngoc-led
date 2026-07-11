@@ -5,8 +5,49 @@ import { db } from "@/lib/firebase";
 import Link from "next/link";
 import Image from "next/image";
 import { MEGA_MENU_CATEGORIES as LOCAL_CATEGORIES } from "@/lib/categories-data";
+import { Metadata } from "next";
 
 export const revalidate = 0; // Disable cache to see fresh products immediately
+
+export async function generateMetadata({ params, searchParams }: { params: Promise<{ slug: string }>, searchParams: Promise<{ [key: string]: string | string[] | undefined }> }): Promise<Metadata> {
+  const { slug } = await params;
+  const searchParamsResolved = await searchParams;
+  const subSlug = searchParamsResolved.sub as string | undefined;
+
+  let title = "Danh mục sản phẩm";
+  let description = "Mua sản phẩm Rạng Đông chính hãng giá tốt nhất tại Bảo Ngọc LED.";
+
+  try {
+    const catRef = doc(db, 'settings', 'categories');
+    const catSnap = await getDoc(catRef);
+    const MEGA_MENU_CATEGORIES = catSnap.exists() && catSnap.data().items && catSnap.data().items.length > 0 ? catSnap.data().items : LOCAL_CATEGORIES;
+    
+    let mainCat = MEGA_MENU_CATEGORIES.find((c: any) => c.slug === slug);
+    if (!mainCat && slug === 'tat-ca') {
+      mainCat = { name: 'Tất cả sản phẩm', description: 'Khám phá tất cả thiết bị điện Rạng Đông' };
+    }
+
+    if (mainCat) {
+      title = `${mainCat.name} Rạng Đông Chính Hãng | Bảo Ngọc LED`;
+      
+      if (subSlug && mainCat.subCategories) {
+        const subCat = mainCat.subCategories.find((s: any) => s.slug === subSlug);
+        if (subCat) {
+          title = `${subCat.name} Rạng Đông | Bảo Ngọc LED`;
+        }
+      }
+    }
+  } catch(e) {}
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+    }
+  };
+}
 
 export default async function CategoryPage({ 
   params,
