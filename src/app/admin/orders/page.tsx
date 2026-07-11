@@ -71,6 +71,27 @@ export default function AdminOrdersPage() {
     }
   };
 
+  const formatDate = (dateValue: any) => {
+    if (!dateValue) return "N/A";
+    try {
+      let d;
+      if (dateValue.toDate) d = dateValue.toDate();
+      else d = new Date(dateValue);
+      
+      if (isNaN(d.getTime())) return "N/A";
+      
+      return d.toLocaleString('vi-VN', {
+        hour: '2-digit',
+        minute: '2-digit',
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+      });
+    } catch {
+      return "N/A";
+    }
+  };
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "pending":
@@ -137,7 +158,7 @@ export default function AdminOrdersPage() {
                 <tr key={order.id} className="border-b last:border-0 hover:bg-slate-50/50">
                   <td className="px-6 py-4 font-mono text-xs uppercase text-slate-500">#{order.id.slice(0, 8)}</td>
                   <td className="px-6 py-4">
-                    {order.createdAt?.toDate ? new Date(order.createdAt.toDate()).toLocaleDateString('vi-VN', { hour: '2-digit', minute: '2-digit' }) : "N/A"}
+                    {formatDate(order.createdAt)}
                   </td>
                   <td className="px-6 py-4">
                     <div className="font-medium text-slate-900">{order.customerInfo?.name}</div>
