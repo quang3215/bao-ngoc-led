@@ -1,90 +1,102 @@
 "use client";
 
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { useState, useEffect } from "react";
 import { Label } from "@/components/ui/label";
-import { toast } from "sonner";
-import { Loader2, DownloadCloud, AlertTriangle } from "lucide-react";
+import { DownloadCloud, ArrowRight, MousePointerClick, Zap } from "lucide-react";
 import { useSettingsStore } from "@/store/settings";
 
 export default function ScraperPage() {
-  const [url, setUrl] = useState("");
   const [targetCategory, setTargetCategory] = useState("");
   const [targetSubCategory, setTargetSubCategory] = useState("");
-  const [isScraping, setIsScraping] = useState(false);
-  const [result, setResult] = useState<{success?: number, error?: string} | null>(null);
+  const [bookmarkletCode, setBookmarkletCode] = useState("");
+  const [origin, setOrigin] = useState("");
   
   const categories = useSettingsStore(state => state.settings.categories);
 
-  const handleScrape = async () => {
-    if (!url || !targetCategory) {
-      toast.error("Vui lòng nhập Link Rạng Đông và chọn danh mục Bảo Ngọc LED đích!");
-      return;
-    }
+  useEffect(() => {
+    setOrigin(window.location.origin);
+  }, []);
 
-    if (url.includes("rangdongstore.vn")) {
-      toast.error("Trang rangdongstore.vn có tường lửa chống cào dữ liệu. Vui lòng lấy link từ trang chủ chính thức: rangdong.com.vn (Ví dụ: rangdong.com.vn/category/den-led-am-tran)");
-      return;
-    }
-
-    if (!url.includes("rangdong.com.vn")) {
-      toast.error("Vui lòng nhập link hợp lệ từ trang chủ Rạng Đông (rangdong.com.vn)!");
-      return;
-    }
-
-    setIsScraping(true);
-    setResult(null);
-
-    try {
-      const res = await fetch("/api/scrape", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          url,
-          categorySlug: targetCategory,
-          subCategorySlug: targetSubCategory
-        })
-      });
-
-      const data = await res.json();
+  useEffect(() => {
+    // Generate the JS code for the bookmarklet
+    const jsCode = `javascript:(function(){
+      if(window.location.hostname !== 'rangdongstore.vn' && window.location.hostname !== 'rangdong.com.vn') {
+        alert("Công cụ này chỉ dùng được trên trang rangdongstore.vn hoặc rangdong.com.vn!");
+        return;
+      }
       
-      if (!res.ok) {
-        throw new Error(data.error || "Có lỗi xảy ra khi cào dữ liệu");
+      let name = document.querySelector('h1') ? document.querySelector('h1').innerText.trim() : document.title;
+      if (!name || name === '') {
+         const nameEl = document.querySelector('.product-title') || document.querySelector('.name');
+         if(nameEl) name = nameEl.innerText.trim();
       }
 
-      setResult({ success: data.scrapedCount });
-      toast.success(`Đã cào thành công ${data.scrapedCount} sản phẩm!`);
-    } catch (error: any) {
-      console.error(error);
-      setResult({ error: error.message });
-      toast.error(error.message);
-    } finally {
-      setIsScraping(false);
-    }
-  };
+      let price = 0;
+      const priceEl = document.querySelector('.current-price') || document.querySelector('.price') || document.querySelector('[itemprop="price"]');
+      if(priceEl) price = parseInt(priceEl.innerText.replace(/[^0-9]/g, '')) || 0;
+      
+      let image = document.querySelector('meta[property="og:image"]')?.content;
+      if(!image) {
+        const imgEl = document.querySelector('.slider-for img') || document.querySelector('.img-product img');
+        if(imgEl) image = imgEl.src;
+      }
+      
+      const specs = {};
+      document.querySelectorAll('tr').forEach(tr => {
+        const tds = tr.querySelectorAll('td');
+        if(tds.length >= 2) {
+          specs[tds[0].innerText.trim()] = tds[1].innerText.trim();
+        }
+      });
+
+      if(!name || price === 0) {
+        alert("Bảo Ngọc Scraper: Không tìm thấy tên hoặc giá sản phẩm trên trang này. Hãy chắc chắn bạn đang ở trang chi tiết sản phẩm!");
+        return;
+      }
+
+      alert("Đang cào dữ liệu: " + name + "... Vui lòng chờ!");
+
+      fetch('${origin}/api/scrape/bookmarklet', {
+        method: 'POST',
+        mode: 'cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          url: window.location.href,
+          name: name,
+          price: price,
+          images: image ? [image] : [],
+          specs: specs,
+          categorySlug: '${targetCategory}',
+          subCategorySlug: '${targetSubCategory}'
+        })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if(data.error) alert("Bảo Ngọc Scraper Lỗi: " + data.error);
+        else alert("🎉 Đã lưu thành công sản phẩm: " + name + " vào kho hàng!");
+      })
+      .catch(e => {
+        console.error(e);
+        alert("Bảo Ngọc Scraper Lỗi kết nối: Không thể gửi dữ liệu. Server Bảo Ngọc LED có thể đang bận hoặc URL bị chặn CORS.");
+      });
+    })();`;
+    
+    // Minify it slightly by removing newlines
+    setBookmarkletCode(jsCode.replace(/\s+/g, ' ').replace(/> </g, '><'));
+  }, [targetCategory, targetSubCategory, origin]);
 
   return (
     <div className="p-6 md:p-10 max-w-4xl mx-auto space-y-8">
       <div>
         <h1 className="text-3xl font-black text-slate-900 flex items-center gap-3">
-          <DownloadCloud className="h-8 w-8 text-[#4A238B]" />
-          Công cụ Cào Dữ Liệu (Auto Scraper)
+          <Zap className="h-8 w-8 text-[#4A238B]" />
+          Công cụ Cào Từng Sản Phẩm (Bookmarklet)
         </h1>
-        <p className="text-slate-500 mt-2">Dán đường dẫn danh mục từ trang Rạng Đông (ví dụ: <code className="bg-slate-100 text-xs px-1">rangdong.com.vn/category/den-led-am-tran</code>) để tự động copy toàn bộ sản phẩm về web Bảo Ngọc LED.</p>
+        <p className="text-slate-500 mt-2">Dùng cách này để vượt qua lớp bảo vệ của Rạng Đông Store. Lấy thẳng dữ liệu từ màn hình của bạn về web Bảo Ngọc LED chỉ bằng 1 nút bấm.</p>
       </div>
 
       <div className="bg-white p-6 rounded-xl border shadow-sm space-y-6">
-        <div className="space-y-2">
-          <Label className="font-bold text-slate-700">Link Danh Mục Rạng Đông *</Label>
-          <Input 
-            value={url}
-            onChange={(e) => setUrl(e.target.value)}
-            placeholder="https://rangdong.com.vn/category/den-led-am-tran"
-            className="w-full font-mono text-sm"
-          />
-        </div>
-
+        <h2 className="text-xl font-bold text-slate-800 border-b pb-3">Bước 1: Chọn Nơi Lưu Trữ</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-2">
             <Label className="font-bold text-slate-700">Lưu vào Danh mục chính (Bảo Ngọc) *</Label>
@@ -93,10 +105,10 @@ export default function ScraperPage() {
               value={targetCategory} 
               onChange={(e) => {
                 setTargetCategory(e.target.value);
-                setTargetSubCategory(""); // Reset sub when main changes
+                setTargetSubCategory(""); 
               }}
             >
-              <option value="" disabled>-- Chọn danh mục đích --</option>
+              <option value="">-- Mặc định (Chưa phân loại) --</option>
               {categories?.map(cat => (
                 <option key={cat.slug} value={cat.slug}>{cat.name}</option>
               ))}
@@ -119,42 +131,48 @@ export default function ScraperPage() {
           </div>
         </div>
 
-        <div className="bg-yellow-50 border border-yellow-200 text-yellow-800 p-4 rounded-lg flex items-start gap-3">
-          <AlertTriangle className="h-5 w-5 shrink-0 mt-0.5" />
-          <div className="text-sm">
-            <strong>Lưu ý:</strong> Quá trình cào dữ liệu có thể mất từ vài chục giây đến vài phút tùy số lượng sản phẩm. Vui lòng không tắt trình duyệt trong quá trình hệ thống đang quay tải.
+        <h2 className="text-xl font-bold text-slate-800 border-b pb-3 pt-4">Bước 2: Cài Đặt Nút Cào Dữ Liệu</h2>
+        <div className="bg-blue-50 border border-blue-200 p-6 rounded-xl flex flex-col md:flex-row gap-6 items-center">
+          <div className="flex-1 space-y-4">
+            <p className="text-slate-700">
+              Hãy dùng chuột <strong>bấm giữ (click and drag)</strong> nút màu tím khổng lồ bên cạnh, sau đó <strong>kéo và thả</strong> nó lên thanh Dấu Trang (Bookmark bar) nằm ngay dưới thanh địa chỉ của trình duyệt bạn đang dùng.
+            </p>
+            <p className="text-sm text-slate-500">
+              * Nếu bạn không thấy thanh Dấu trang, hãy ấn tổ hợp phím <strong>Ctrl + Shift + B</strong> (Windows) hoặc <strong>Cmd + Shift + B</strong> (Mac).
+            </p>
+          </div>
+          <div className="shrink-0 flex flex-col items-center gap-2">
+            <a 
+              href={bookmarkletCode} 
+              className="px-8 py-4 bg-[#4A238B] text-white font-black rounded-lg shadow-lg hover:scale-105 transition-transform flex items-center gap-2 cursor-grab active:cursor-grabbing hover:bg-[#381b6c]"
+              onClick={(e) => e.preventDefault()}
+            >
+              <DownloadCloud className="w-5 h-5" />
+              🛒 Kéo về Bảo Ngọc LED
+            </a>
+            <span className="text-xs text-blue-500 font-bold">Kéo nút này lên trên ↑</span>
           </div>
         </div>
 
-        <Button 
-          onClick={handleScrape} 
-          disabled={isScraping || !url || !targetCategory}
-          className="w-full bg-[#4A238B] hover:bg-[#381a69] text-white py-6 text-lg font-bold"
-        >
-          {isScraping ? (
-            <>
-              <Loader2 className="mr-2 h-6 w-6 animate-spin" />
-              Đang cào dữ liệu... Vui lòng chờ!
-            </>
-          ) : (
-            <>
-              <DownloadCloud className="mr-2 h-6 w-6" />
-              BẮT ĐẦU CÀO SẢN PHẨM
-            </>
-          )}
-        </Button>
-
-        {result && result.success !== undefined && (
-          <div className="bg-green-50 border border-green-200 text-green-700 p-4 rounded-lg text-center font-bold">
-            🎉 Xong! Đã cào thành công {result.success} sản phẩm mới. Bạn có thể qua phần Sản phẩm để kiểm tra!
+        <h2 className="text-xl font-bold text-slate-800 border-b pb-3 pt-4">Bước 3: Hướng Dẫn Sử Dụng</h2>
+        <div className="space-y-4 text-slate-700">
+          <div className="flex gap-4 items-start">
+            <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center font-black text-slate-900 shrink-0">1</div>
+            <p className="mt-1">Mở một tab (thẻ) mới và vào trang web <strong>rangdongstore.vn</strong>.</p>
           </div>
-        )}
-
-        {result && result.error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-lg font-medium">
-            ❌ Lỗi: {result.error}
+          <div className="flex gap-4 items-start">
+            <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center font-black text-slate-900 shrink-0">2</div>
+            <p className="mt-1">Bấm vào xem chi tiết một sản phẩm bất kỳ (Ví dụ: Đèn LED âm trần 7W AT10).</p>
           </div>
-        )}
+          <div className="flex gap-4 items-start">
+            <div className="w-8 h-8 rounded-full bg-[#4A238B] flex items-center justify-center font-black text-white shrink-0">3</div>
+            <p className="mt-1">Khi màn hình đang ở trang sản phẩm, bạn <strong>bấm vào nút "🛒 Kéo về Bảo Ngọc LED"</strong> mà bạn vừa cài trên thanh Dấu trang lúc nãy.</p>
+          </div>
+          <div className="flex gap-4 items-start">
+            <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center font-black text-green-700 shrink-0">4</div>
+            <p className="mt-1">Hệ thống sẽ hiện thông báo "Đã lưu thành công". Thế là xong! Sản phẩm đã nằm trong CSDL của bạn.</p>
+          </div>
+        </div>
       </div>
     </div>
   );

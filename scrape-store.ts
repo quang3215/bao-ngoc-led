@@ -1,29 +1,28 @@
 import axios from 'axios';
 import * as cheerio from 'cheerio';
 
-async function testStoreScrape() {
-  const url = 'https://rangdongstore.vn/den-led-downlight-am-tran-goc-rong-c-2202080083/';
+async function testSingleProduct() {
+  const url = 'https://rangdongstore.vn/den-led-downlight-am-tran-90-7w-at10-p-241007000216/';
   try {
-    const { data } = await axios.get(url);
-    const $ = cheerio.load(data);
+    const { data } = await axios.get(url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+      }
+    });
     
-    const nuxtDataStr = $('script').filter((i, el) => {
-      return $(el).text().includes('window.__NUXT__');
-    }).text();
-    
-    // Use regex to find product slugs or paths
-    // Usually Nuxt payloads have something like: url:"/name-p-12345"
-    const matches = nuxtDataStr.match(/-p-[0-9]+/g);
-    console.log("Found -p- occurrences:", matches ? matches.length : 0);
-    
-    if (matches && matches.length > 0) {
-      // let's try to extract full paths
-      const paths = nuxtDataStr.match(/"\/([a-zA-Z0-9-]+-p-[0-9]+)\/"/g);
-      console.log("Found paths:", paths?.slice(0, 5));
+    // check if it returns a cloudflare challenge page
+    if (data.includes("cf-challenge") || data.includes("Cloudflare")) {
+       console.log("Blocked by Cloudflare");
+    } else {
+       console.log("Success! Extracted bytes:", data.length);
+       const $ = cheerio.load(data);
+       console.log("Title:", $('h1').text().trim() || $('title').text().trim());
+       // nuxt data?
+       const nuxtDataStr = $('script').filter((i, el) => $(el).text().includes('window.__NUXT__')).text();
+       console.log("Nuxt Data exists?", nuxtDataStr ? "YES" : "NO");
     }
-    
-  } catch (error) {
-    console.error(error);
+  } catch (err: any) {
+    console.error("Error:", err.message);
   }
 }
-testStoreScrape();
+testSingleProduct();
