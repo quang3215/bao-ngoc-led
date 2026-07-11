@@ -1,131 +1,153 @@
 import { NextResponse } from "next/server";
+import axios from "axios";
 import * as cheerio from "cheerio";
+import { collection, doc, setDoc } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 
-export async function POST(req: Request) {
+export async function POST(request: Request) {
   try {
-    const { url } = await req.json();
+    const { url, categorySlug, subCategorySlug } = await request.json();
 
     if (!url) {
-      return NextResponse.json(
-        { error: "Vui lòng cung cấp URL Rạng Đông" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Missing URL" }, { status: 400 });
     }
 
-    if (!url.includes("rangdong.com.vn")) {
-      return NextResponse.json(
-        { error: "URL phải thuộc domain rangdong.com.vn" },
-        { status: 400 }
-      );
-    }
-
-    const response = await fetch(url, {
+    // 1. Fetch category page
+    console.log(`Scraping category URL: ${url}`);
+    const { data: catData } = await axios.get(url, {
       headers: {
-        "User-Agent":
-          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error(`Failed to fetch page: ${response.statusText}`);
-    }
-
-    const html = await response.text();
-    const $ = cheerio.load(html);
-
-    // Bóc tách Dữ liệu cơ bản
-    const name = $('h1').first().text().trim() || $('meta[property="og:title"]').attr("content") || "";
-    
-    // Tìm giá bán
-    let priceText = $(".pd-info__price strong").first().text().trim() || 
-                    $(".price").first().text().trim() || 
-                    $(".product-price").first().text().trim() || 
-                    $("span:contains('đ')").first().text().trim() ||
-                    $("*:contains('VNĐ')").last().text().trim();
-    
-    // Chỉ lấy số từ chuỗi giá
-    let price = 0;
-    if (priceText) {
-      const numberStr = priceText.replace(/[^0-9]/g, "");
-      if (numberStr) {
-        price = parseInt(numberStr, 10);
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
       }
-    }
-
-    // Lấy Ảnh (lấy nhiều ảnh nếu có)
-    const images: string[] = [];
+    });
     
-    const mainImage = $('meta[property="og:image"]').attr("content");
-    if (mainImage) images.push(mainImage.startsWith("http") ? mainImage : `https://rangdong.com.vn${mainImage}`);
+    const $cat = cheerio.load(catData);
+    const productLinks: string[] = [];
 
-    $(".product-gallery img, .thumbnail img, .product-image img, .slider-nav img, .pd-image img, .pd-gallery img, .swiper-slide img").each((i, el) => {
-      const src = $(el).attr("src") || $(el).attr("data-src");
-      if (src) {
-        const fullSrc = src.startsWith("http") ? src : `https://rangdong.com.vn${src}`;
-        if (!images.includes(fullSrc) && !fullSrc.includes('base64')) images.push(fullSrc);
+    // Find links in rangdong.com.vn layout
+    $cat('.product-item, .item-product, .product, .box-product').each((i, el) => {
+      const href = $cat(el).find('a').first().attr('href');
+      if (href && !productLinks.includes(href)) {
+        productLinks.push(href);
       }
     });
 
-    // Bóc tách Thông số kỹ thuật
-    const specs: Record<string, string> = {};
-    let allSpecsText = ""; // Để dành cho phần mô tả nếu không khớp field
-    
-    $("#pd-tab-2 table tr, .table-spec tr, table tr").each((i, el) => {
-      const cells = $(el).find("td, th");
-      if (cells.length >= 2) {
-        const key = $(cells[0]).text().trim().toLowerCase();
-        const val = $(cells[1]).text().trim();
-        
-        if (key && val) {
-          allSpecsText += `- **${key}:** ${val}\n`;
-          if (key.includes("công suất")) specs.wattage = val;
-          if (key.includes("nhiệt độ màu") || key.includes("màu ánh sáng")) specs.color_temperature = val;
-          if (key.includes("lỗ khoét")) specs.hole_size = val;
-          if (key.includes("quang thông")) specs.luminous_flux = val;
-          if (key.includes("tuổi thọ")) specs.lifespan = val;
-          if (key.includes("điện áp") && !key.includes("dải")) specs.voltage = val;
-          if (key.includes("dải điện áp")) specs.voltage_range = val;
-          if (key.includes("hiệu suất")) specs.luminous_efficacy = val;
-          if (key.includes("hoàn màu") || key.includes("cri")) specs.cri = val;
+    if (productLinks.length === 0) {
+      $cat('a').each((i, el) => {
+        const href = $cat(el).attr('href');
+        if (href && href.includes('/product/') && !productLinks.includes(href)) {
+          productLinks.push(href);
         }
+      });
+    }
+
+    if (productLinks.length === 0) {
+      return NextResponse.json({ error: "Không tìm thấy sản phẩm nào trong đường dẫn này. Vui lòng kiểm tra lại link." }, { status: 400 });
+    }
+
+    // Limit to 10 products per run to avoid Vercel timeout (10s limit on free tier)
+    const linksToScrape = productLinks.slice(0, 10);
+    console.log(`Found ${productLinks.length} products. Scraping first ${linksToScrape.length}...`);
+
+    let scrapedCount = 0;
+
+    for (const link of linksToScrape) {
+      try {
+        const fullLink = link.startsWith('http') ? link : `https://rangdong.com.vn${link}`;
+        const { data: prodData } = await axios.get(fullLink, {
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'
+          }
+        });
+        
+        const $prod = cheerio.load(prodData);
+        
+        // Parse Title
+        let name = $prod('h1').first().text().trim();
+        if (!name) name = $prod('.product-title, .name').first().text().trim();
+        
+        // Parse Image
+        let image = $prod('.img-product img, .product-image img, .slider-for img').first().attr('src');
+        if (!image) {
+           image = $prod('meta[property="og:image"]').attr('content');
+        }
+        if (image && !image.startsWith('http')) {
+          image = `https://rangdong.com.vn${image}`;
+        }
+
+        // Parse Price
+        let priceText = $prod('.price, .product-price, .current-price').first().text().trim();
+        let price = parseInt(priceText.replace(/[^0-9]/g, ''));
+        if (isNaN(price) || price === 0) {
+          price = 150000; // fallback mock price
+        }
+
+        // Parse Specs
+        const specs: Record<string, string> = {};
+        $prod('.table-technical tr, .spec-table tr, .technical-table tr, tbody tr').each((i, el) => {
+          const key = $prod(el).find('td').eq(0).text().trim();
+          const val = $prod(el).find('td').eq(1).text().trim();
+          if (key && val) {
+            if (key.toLowerCase().includes('công suất')) specs.wattage = val;
+            if (key.toLowerCase().includes('điện áp')) specs.voltage = val;
+            if (key.toLowerCase().includes('nhiệt độ màu')) specs.color_temperature = val;
+            if (key.toLowerCase().includes('quang thông')) specs.luminous_flux = val;
+            if (key.toLowerCase().includes('tuổi thọ')) specs.lifespan = val;
+            if (key.toLowerCase().includes('kích thước')) specs.hole_size = val;
+          }
+        });
+
+        // Parse Features
+        const features: string[] = [];
+        $prod('.product-feature li, .feature-list li, .description ul li').each((i, el) => {
+          const text = $prod(el).text().trim();
+          if (text) features.push(text);
+        });
+
+        // Generate SKU
+        const skuStr = `RD-${Date.now().toString().slice(-6)}-${Math.floor(Math.random()*100)}`;
+
+        if (name && image) {
+          const productData = {
+            sku: skuStr,
+            name,
+            price,
+            originalPrice: price > 0 ? Math.floor(price * 1.2) : 200000,
+            stock: 100,
+            images: [image],
+            category: categorySlug,
+            subCategory: subCategorySlug || "",
+            specs: {
+              wattage: specs.wattage || "",
+              voltage: specs.voltage || "220V/50Hz",
+              color_temperature: specs.color_temperature || "",
+              luminous_flux: specs.luminous_flux || "",
+              lifespan: specs.lifespan || "20000 giờ",
+              hole_size: specs.hole_size || "",
+              warranty: "2 năm"
+            },
+            features: features.length > 0 ? features : ["Thiết kế hiện đại", "Tiết kiệm điện", "Tuổi thọ cao"],
+            description: `<p>Sản phẩm chính hãng Rạng Đông. ${name}</p>`,
+            application: {
+              description: "Phù hợp cho không gian nội thất gia đình, chung cư, văn phòng.",
+              image: ""
+            },
+            isBestSeller: false,
+            createdAt: Date.now()
+          };
+
+          // Save to Firebase
+          await setDoc(doc(collection(db, "products")), productData);
+          scrapedCount++;
+        }
+
+      } catch (err) {
+        console.error(`Error scraping product ${link}:`, err);
       }
-    });
-
-    // Lấy mô tả tổng quan
-    let description = $("#pd-tab-1").text().trim().substring(0, 500) || "";
-    if (allSpecsText) {
-      description += "\n\n### Thông số kỹ thuật chi tiết:\n" + allSpecsText;
     }
 
-    // Lấy mã sản phẩm (SKU)
-    let sku = "";
-    // Tìm mã trong title (Ví dụ: CT2C, AT58,...)
-    const skuMatch = name.match(/([a-zA-Z0-9-]+\/[a-zA-Z0-9W]+|[A-Z0-9]{4,})/);
-    if (skuMatch) {
-      sku = skuMatch[1].replace(/\//g, "-").toUpperCase();
-    } else {
-      sku = "SP-" + Math.floor(Math.random() * 10000);
-    }
-
-    return NextResponse.json({
-      success: true,
-      data: {
-        sku: sku || `sp-${Date.now()}`,
-        name: name || "Không tìm thấy tên sản phẩm",
-        price: price || 0,
-        images: images,
-        specs: specs,
-        description: description,
-        category: "san-pham-chieu-sang", // Mặc định
-        originalUrl: url
-      },
-    });
-
+    return NextResponse.json({ scrapedCount });
   } catch (error: any) {
     console.error("Scraper Error:", error);
-    return NextResponse.json(
-      { error: `Lỗi cào dữ liệu: ${error.message}` },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

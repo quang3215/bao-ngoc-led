@@ -24,6 +24,7 @@ const SIDEBAR_ITEMS = [
   { name: "Menu điều hướng", href: "/admin/menu", icon: Menu },
   { name: "Chân trang", href: "/admin/footer", icon: Layout },
   { name: "Cài đặt", href: "/admin/settings", icon: Settings },
+  { name: "Cào Dữ Liệu", href: "/admin/scraper", icon: Package },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
