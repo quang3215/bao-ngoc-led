@@ -130,11 +130,17 @@ export default function ScraperPage() {
         <div className="bg-blue-50 border border-blue-200 p-6 rounded-xl flex flex-col md:flex-row gap-6 items-center">
           <div className="flex-1 space-y-4">
             <p className="text-slate-700">
-              Hãy dùng chuột <strong>bấm giữ (click and drag)</strong> nút màu tím khổng lồ bên cạnh, sau đó <strong>kéo và thả</strong> nó lên thanh Dấu Trang (Bookmark bar) nằm ngay dưới thanh địa chỉ của trình duyệt bạn đang dùng.
+              Hãy dùng chuột <strong>bấm giữ (click and drag)</strong> nút màu tím khổng lồ bên cạnh, sau đó <strong>kéo và thả</strong> nó lên thanh Dấu Trang (Bookmark bar) ở trên cùng của trình duyệt.
             </p>
             <p className="text-sm text-slate-500">
-              * Nếu bạn không thấy thanh Dấu trang, hãy ấn tổ hợp phím <strong>Ctrl + Shift + B</strong> (Windows) hoặc <strong>Cmd + Shift + B</strong> (Mac).
+              * Nếu kéo thả không được (tuỳ trình duyệt), bạn hãy <strong>chuột phải lên thanh Dấu trang {'>'} Thêm trang (Add Page)</strong>, đổi tên thành "🛒 Kéo về Bảo Ngọc", sau đó copy toàn bộ đoạn mã bên dưới dán vào ô URL/Địa chỉ:
             </p>
+            <textarea 
+              readOnly 
+              className="w-full h-24 p-3 text-xs font-mono bg-slate-900 text-green-400 rounded border-0 outline-none resize-none"
+              value={bookmarkletCode}
+              onClick={e => (e.target as HTMLTextAreaElement).select()}
+            />
           </div>
           <div className="shrink-0 flex flex-col items-center gap-2">
             <a 
