@@ -721,6 +721,8 @@ export default function AdminProductsPage() {
                   onChange={(e) => setFormData({...formData, images: e.target.value})} 
                   placeholder="https://.../img.jpg"
                 />
+              </div>
+
               {/* LƯU THAY ĐỔI */}
               <div className="bg-white p-6 rounded-xl border shadow-sm flex flex-col gap-4 sticky top-6">
                 <Button type="submit" className="w-full h-12 text-base font-bold shadow-lg shadow-primary/20 hover:-translate-y-0.5 transition-all" disabled={isLoading}>
