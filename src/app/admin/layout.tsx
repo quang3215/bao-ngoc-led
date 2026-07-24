@@ -2,14 +2,16 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { LayoutDashboard, Package, ShoppingCart, Users, Settings, LogOut, FileText, Layout, Home, Menu, Grid, MessageSquare, Star } from "lucide-react";
+import { LayoutDashboard, Package, ShoppingCart, Users, Settings, LogOut, FileText, Layout, Home, Menu, Grid, MessageSquare, Star, UserCog } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/store/auth";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useSettingsStore } from "@/store/settings";
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 
-const ADMIN_EMAIL = "lmquang28@gmail.com";
+export const ROOT_ADMIN = "lmquang28@gmail.com";
 
 const SIDEBAR_ITEMS = [
   { name: "Tổng quan", href: "/admin", icon: LayoutDashboard },
@@ -23,8 +25,9 @@ const SIDEBAR_ITEMS = [
   { name: "Trang chủ", href: "/admin/homepage", icon: Home },
   { name: "Menu điều hướng", href: "/admin/menu", icon: Menu },
   { name: "Chân trang", href: "/admin/footer", icon: Layout },
-  { name: "Cài đặt", href: "/admin/settings", icon: Settings },
   { name: "Cào Dữ Liệu", href: "/admin/scraper", icon: Package },
+  { name: "Quản lý Admins", href: "/admin/admins", icon: UserCog },
+  { name: "Cài đặt", href: "/admin/settings", icon: Settings },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -33,13 +36,17 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const { user, isLoading } = useAuthStore();
   const fetchSettings = useSettingsStore(state => state.fetchSettings);
   const [isAuthorized, setIsAuthorized] = useState(false);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
 
   useEffect(() => {
     fetchSettings();
   }, [fetchSettings]);
 
   useEffect(() => {
-    if (pathname === "/admin/login") return; // Bypass check for login page
+    if (pathname === "/admin/login") {
+      setIsCheckingAuth(false);
+      return; 
+    }
     if (isLoading) return;
     
     if (!user) {
@@ -48,13 +55,34 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       return;
     }
 
-    if (user.email !== ADMIN_EMAIL) {
-      toast.error("Tài khoản của bạn không có quyền truy cập trang quản trị!");
-      router.replace("/");
-      return;
-    }
+    const checkAdminStatus = async () => {
+      try {
+        const adminDoc = await getDoc(doc(db, "settings", "admins"));
+        let allowedEmails = [ROOT_ADMIN];
+        if (adminDoc.exists() && adminDoc.data().emails) {
+          allowedEmails = adminDoc.data().emails;
+        }
 
-    setIsAuthorized(true);
+        if (!allowedEmails.includes(user.email)) {
+          toast.error("Tài khoản của bạn không có quyền truy cập trang quản trị!");
+          router.replace("/");
+          return;
+        }
+
+        setIsAuthorized(true);
+      } catch (error) {
+        console.error("Error checking admin status:", error);
+        if (user.email !== ROOT_ADMIN) {
+          router.replace("/");
+        } else {
+          setIsAuthorized(true);
+        }
+      } finally {
+        setIsCheckingAuth(false);
+      }
+    };
+
+    checkAdminStatus();
   }, [user, isLoading, router, pathname]);
 
   if (pathname === "/admin/login") {
