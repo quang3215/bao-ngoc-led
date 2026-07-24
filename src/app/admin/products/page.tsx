@@ -721,16 +721,17 @@ export default function AdminProductsPage() {
                   onChange={(e) => setFormData({...formData, images: e.target.value})} 
                   placeholder="https://.../img.jpg"
                 />
+              {/* LƯU THAY ĐỔI */}
+              <div className="bg-white p-6 rounded-xl border shadow-sm flex flex-col gap-4 sticky top-6">
+                <Button type="submit" className="w-full h-12 text-base font-bold shadow-lg shadow-primary/20 hover:-translate-y-0.5 transition-all" disabled={isLoading}>
+                  {isLoading ? <Loader2 className="animate-spin h-5 w-5 mr-2" /> : <Save className="h-5 w-5 mr-2" />}
+                  {editingId ? "Lưu thay đổi" : "Xuất bản Sản phẩm"}
+                </Button>
+                <Button type="button" variant="outline" className="w-full h-12" onClick={() => setViewState('list')}>
+                  Hủy bỏ
+                </Button>
               </div>
             </div>
-          </div>
-
-          <div className="flex justify-end gap-4 pt-6 mt-8 border-t border-slate-200">
-            <Button type="button" variant="outline" className="min-w-[120px]" onClick={() => setViewState('list')}>Hủy bỏ</Button>
-            <Button type="submit" className="min-w-[200px] h-11 text-base shadow-lg shadow-primary/20 hover:-translate-y-0.5 transition-all" disabled={isLoading}>
-              {isLoading ? <Loader2 className="animate-spin h-5 w-5 mr-2" /> : <Save className="h-5 w-5 mr-2" />}
-              {editingId ? "Lưu thay đổi" : "Xuất bản Sản phẩm"}
-            </Button>
           </div>
         </form>
       </div>
