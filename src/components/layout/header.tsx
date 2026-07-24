@@ -202,7 +202,7 @@ export function Header() {
             }} className="flex-1 flex h-full">
               <input 
                 name="q" type="text" placeholder="Tìm sản phẩm, danh mục mong muốn..." 
-                className="flex-1 h-full px-4 outline-none text-sm bg-[#e8f5e9]"
+                className="flex-1 h-full px-4 outline-none text-sm bg-white"
               />
               <button type="submit" className="h-full px-5 bg-[#4A238B] text-white flex items-center justify-center hover:bg-[#35156B] transition-colors">
                  <Search className="w-5 h-5" />
