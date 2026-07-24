@@ -725,7 +725,7 @@ export default function AdminProductsPage() {
             </div>
           </div>
 
-          <div className="flex justify-end gap-4 sticky bottom-4 bg-white p-4 border rounded-xl shadow-[0_-10px_40px_rgba(0,0,0,0.05)] z-50">
+          <div className="flex justify-end gap-4 sticky bottom-0 bg-white p-4 border-t shadow-[0_-10px_40px_rgba(0,0,0,0.05)] z-50 w-full mt-10">
             <Button type="button" variant="outline" className="min-w-[120px]" onClick={() => setViewState('list')}>Hủy bỏ</Button>
             <Button type="submit" className="min-w-[200px] h-11 text-base shadow-lg shadow-primary/20 hover:-translate-y-0.5 transition-all" disabled={isLoading}>
               {isLoading ? <Loader2 className="animate-spin h-5 w-5 mr-2" /> : <Save className="h-5 w-5 mr-2" />}
