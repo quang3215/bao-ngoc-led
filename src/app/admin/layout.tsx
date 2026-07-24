@@ -63,7 +63,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           allowedEmails = adminDoc.data().emails;
         }
 
-        if (!allowedEmails.includes(user.email)) {
+        if (!user.email || !allowedEmails.includes(user.email)) {
           toast.error("Tài khoản của bạn không có quyền truy cập trang quản trị!");
           router.replace("/");
           return;
