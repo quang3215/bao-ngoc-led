@@ -103,15 +103,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   return (
     <div className="flex h-screen bg-slate-100">
       {/* Sidebar */}
-      <div className="w-64 bg-slate-900 text-white hidden md:flex flex-col">
-        <div className="p-6">
+      <div className="w-64 bg-slate-900 text-white hidden md:flex flex-col shrink-0">
+        <div className="p-6 shrink-0">
           <Link href="/" className="inline-block">
             <img src="/logo.png" alt="Bảo Ngọc LED" className="h-10 w-auto object-contain bg-white rounded-md p-1" />
           </Link>
           <div className="text-xs text-slate-400 mt-1 uppercase tracking-wider font-semibold">Admin Panel</div>
         </div>
         
-        <div className="flex-1 py-6">
+        <div className="flex-1 py-6 overflow-y-auto custom-scrollbar">
           <nav className="space-y-1 px-4">
             {SIDEBAR_ITEMS.map((item) => {
               const isActive = pathname === item.href || (item.href !== "/admin" && pathname?.startsWith(item.href));
@@ -136,7 +136,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </nav>
         </div>
 
-        <div className="p-4 border-t border-slate-800">
+        <div className="p-4 border-t border-slate-800 shrink-0">
           <Link
             href="/"
             className="flex items-center gap-3 px-4 py-3 rounded-xl transition-colors font-medium text-slate-300 hover:bg-slate-800 hover:text-white"
@@ -148,17 +148,17 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col overflow-hidden min-w-0">
         {/* Top Header */}
-        <header className="h-16 bg-white border-b flex items-center px-8 shadow-sm z-10">
+        <header className="h-16 bg-white border-b flex items-center px-8 shadow-sm z-10 shrink-0">
           <h2 className="text-lg font-bold text-slate-800">
             {SIDEBAR_ITEMS.find(item => pathname === item.href || (item.href !== "/admin" && pathname?.startsWith(item.href)))?.name || "Admin Panel"}
           </h2>
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 overflow-auto p-8">
-          <div className="max-w-7xl mx-auto">
+        <main className="flex-1 overflow-y-auto overflow-x-hidden p-8 bg-slate-50 relative">
+          <div className="max-w-7xl mx-auto pb-20">
             {children}
           </div>
         </main>
