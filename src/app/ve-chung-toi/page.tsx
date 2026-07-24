@@ -210,17 +210,17 @@ export default function AboutPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {projects.map((project, idx) => (
-              <div key={idx} className="group rounded-2xl overflow-hidden bg-slate-800 border border-slate-700 hover:border-primary/50 transition-colors">
+              <div key={idx} className="group rounded-2xl overflow-hidden bg-slate-800 border border-slate-700 hover:border-purple-400/50 transition-all hover:-translate-y-1 shadow-lg">
                 <div className="relative h-60 w-full overflow-hidden">
                   <Image src={project.image} alt={project.title} fill className="object-cover group-hover:scale-105 transition-transform duration-700" />
                   <div className="absolute inset-0 bg-gradient-to-t from-slate-900 to-transparent"></div>
                   <div className="absolute top-4 left-4">
-                    <span className="px-3 py-1 bg-primary text-white text-xs font-bold rounded-full">{project.category}</span>
+                    <span className="px-3 py-1 bg-purple-600 text-white text-xs font-bold rounded-full">{project.category}</span>
                   </div>
                 </div>
                 <div className="p-6">
-                  <h4 className="text-xl font-bold mb-2 group-hover:text-primary transition-colors">{project.title}</h4>
-                  <p className="text-slate-400 text-sm leading-relaxed">{project.desc}</p>
+                  <h4 className="text-xl font-bold mb-2 group-hover:text-purple-300 transition-colors text-white">{project.title}</h4>
+                  <p className="text-slate-300 text-sm leading-relaxed">{project.desc}</p>
                 </div>
               </div>
             ))}
