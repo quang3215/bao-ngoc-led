@@ -51,7 +51,7 @@ function TrendingCard({ product }: { product: TrendingProduct }) {
             <span className="text-slate-900 font-bold text-lg tracking-tight">
               {formatCurrency(product.price)}
             </span>
-            {product.originalPrice && product.originalPrice > product.price && (
+            {product.price > 0 && product.originalPrice && product.originalPrice > product.price && (
               <span className="text-slate-400 line-through text-xs font-medium">
                 {formatCurrency(product.originalPrice)}
               </span>

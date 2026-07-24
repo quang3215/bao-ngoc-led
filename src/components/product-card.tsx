@@ -104,9 +104,11 @@ export function ProductCard({ product }: ProductCardProps) {
               <span className="text-base sm:text-lg font-bold text-[#ee4d2d] tracking-tight">
                 {formatCurrency(product.price)}
               </span>
-              <span className="text-[11px] sm:text-xs text-slate-400 line-through">
-                {formatCurrency(Math.round(product.price * 1.35 / 1000) * 1000)}
-              </span>
+              {product.price > 0 && (
+                <span className="text-[11px] sm:text-xs text-slate-400 line-through">
+                  {formatCurrency(Math.round(product.price * 1.35 / 1000) * 1000)}
+                </span>
+              )}
             </div>
             
             <div className="flex gap-1.5 flex-wrap">

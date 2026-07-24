@@ -56,7 +56,7 @@ function CategoryProductCard({ product }: { product: CategoryBlockProduct }) {
             <span className="text-red-600 font-bold text-base sm:text-lg tracking-tight">
               {formatCurrency(product.price)}
             </span>
-            {product.originalPrice && product.originalPrice > product.price && (
+            {product.price > 0 && product.originalPrice && product.originalPrice > product.price && (
               <span className="text-slate-400 line-through text-[11px] sm:text-xs font-medium">
                 {formatCurrency(product.originalPrice)}
               </span>
